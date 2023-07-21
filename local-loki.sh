@@ -1,27 +1,26 @@
 #!/bin/bash
 set -euo pipefail
 
-if [ -z "$1" ]
-  then
-    echo "./local-loki.sh <path to unpacked must-gather>"
-    exit 1
+if [ -z "$1" ]; then
+  echo "./local-loki.sh <path to unpacked sos-report>"
+  exit 1
 fi
 
 # Create a pod
-podman pod stop must-gather && podman pod rm must-gather || true
-podman pod create --name must-gather -p 3000:3000
+podman pod stop sos-report && podman pod rm sos-report || true
+podman pod create --name sos-report -p 3000:3000
 
 # Start Loki container
 # podman rm -f loki || true
 podman run -d \
-  --pod must-gather \
+  --pod sos-report \
   --name loki \
   -u 0 \
   -ti docker.io/grafana/loki:2.2.0
 
 # Start Grafana
 podman run -d \
-  --pod must-gather \
+  --pod sos-report \
   --name grafana \
   -e GF_AUTH_ANONYMOUS_ENABLED=true \
   -e GF_AUTH_ANONYMOUS_ORG_ROLE=Editor \
@@ -30,7 +29,7 @@ podman run -d \
 
 # Start promtail
 podman run -d \
-  --pod must-gather \
+  --pod sos-report \
   --name promtail \
   -v $(pwd)/promtail:/etc/promtail \
   -v "$1":"/logs" \
