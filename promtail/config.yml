@@ -16,6 +16,20 @@ scrape_configs:
     labels:
       job: container-logs
       __path__: /logs/sos_commands/microshift/namespaces/**/{current,previous}.log
+  - targets:
+      - localhost
+    labels:
+      job: journal
+      __path__: /logs/sos_commands/logs/journalctl_--no-pager
+  # journal:
+  #   json: false
+  #   path: /logs/sos_commands/logs/
+  #   labels:
+  #     job: journal
+  # relabel_configs:
+  #   - source_labels: ['__journal__systemd_unit']
+  #     target_label: 'unit'
+
   pipeline_stages:
     - match:
         selector: '{job="container-logs"}'
@@ -27,3 +41,14 @@ scrape_configs:
             namespace:
             pod:
             container:
+    - match:
+        selector: '{job="journal"}'
+        stages:
+        - regex:
+            expression: "^(?s)(?P<time>\\S+ \\S+ \\S+) (?P<host>\\S+) (?P<service>[\\w.]+)\\[(?P<pid>\\d+)\\]: (?P<message>.*)$"
+        - labels:
+            time:
+            host:
+            service:
+            pid:
+            message:
