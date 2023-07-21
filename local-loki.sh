@@ -16,7 +16,7 @@ podman run -d \
   --pod sos-report \
   --name loki \
   -u 0 \
-  -ti docker.io/grafana/loki:2.2.0
+  -ti docker.io/grafana/loki:2.8.2
 
 # Start Grafana
 podman run -d \
@@ -25,7 +25,7 @@ podman run -d \
   -e GF_AUTH_ANONYMOUS_ENABLED=true \
   -e GF_AUTH_ANONYMOUS_ORG_ROLE=Editor \
   -v $(pwd)/grafana/datasources:/etc/grafana/provisioning/datasources \
-  -ti docker.io/grafana/grafana:7.5.0
+  -ti docker.io/grafana/grafana:10.0.2
 
 # Start promtail
 podman run -d \
@@ -33,6 +33,6 @@ podman run -d \
   --name promtail \
   -v $(pwd)/promtail:/etc/promtail \
   -v "$1":"/logs" \
-  -ti docker.io/grafana/promtail:2.2.0
+  -ti docker.io/grafana/promtail:2.8.2
 
 echo "Grafana started at http://localhost:3000/explore"
