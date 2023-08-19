@@ -37,18 +37,37 @@ scrape_configs:
         - regex:
             source: filename
             expression: "/logs/sos_commands/microshift/namespaces/(?P<namespace>.+?)/pods/(?P<pod>.+?)/(?P<container>.+?)/.*"
+        - regex:
+            expression: "^(?s)(?P<time>[0-9-T:.]+) (?P<message>.*?)$"
         - labels:
             namespace:
             pod:
             container:
+            time:
+        - output:
+            source: message
+        - timestamp:
+            source: 'time'
+            format: RFC3339Nano
     - match:
         selector: '{job="journal"}'
         stages:
+        - drop:
+            expression: "^-- Boot [0-9a-f]{32} --$"
+        # merge lines starting with space into proceeding lines
+        - multiline:
+            firstline: "^\\S"
         - regex:
-            expression: "^(?s)(?P<time>\\S+ \\S+ \\S+) (?P<host>\\S+) (?P<service>[\\w.]+)\\[(?P<pid>\\d+)\\]: (?P<message>.*)$"
+            expression: "^(?s)(?P<time>\\S+ \\S+ \\S+) (?P<host>\\S+) (?P<service>[\\w.-]+)(\\[(?P<pid>\\d+)\\])*?: (?P<message>.*?)$"
+        - output:
+            source: message
         - labels:
-            time:
             host:
             service:
             pid:
-            message:
+            time:
+        - timestamp:
+            source: 'time'
+            format: 'Jan 2 15:04:05'
+            # fallback_formats: ['Jan2 15:04:05', '2006-01-02 15:04:05.999', '2006-01-02T15:04:05.999']
+            location: 'America/New_York'
