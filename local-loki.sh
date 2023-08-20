@@ -59,38 +59,7 @@ if [ -z "$1" ]; then
 fi
 
 sos="$(get_mountpoint "${1}")"
-
-podman pod kill sos-report && podman pod rm sos-report || true
-podman pod create --name sos-report -p 3000:3000
-
-podman run -d \
-	--pod sos-report \
-	--name loki \
-	-u 0 \
-	-ti docker.io/grafana/loki:2.8.2 \
-	-config.file=/etc/loki/local-config.yaml \
-	-validation.reject-old-samples=false \
-	-querier.query-ingesters-within=0 \
-	-ingester.max-chunk-age=166h
-
-# -print-config-stderr
-# -log.level=debug
-
-podman run -d \
-	--pod sos-report \
-	--name grafana \
-	-e GF_AUTH_ANONYMOUS_ENABLED=true \
-	-e GF_AUTH_ANONYMOUS_ORG_ROLE=Editor \
-	-v "$(pwd)/grafana/datasources:/etc/grafana/provisioning/datasources:Z" \
-	-ti docker.io/grafana/grafana:10.0.2
-
-sleep 3 # give loki some time to start
-podman run -d \
-	--pod sos-report \
-	--name promtail \
-	-v "$(pwd)/promtail:/etc/promtail:Z" \
-	-v "${sos}:/logs:Z" \
-	-ti docker.io/grafana/promtail:2.8.2
-# -config.file=/etc/promtail/config.yml -log.level debug -inspect -dry-run
+podman kube down ./pod.yaml
+SOS_REPORT_INPUT="${sos}" envsubst <./pod.yaml | podman kube play -
 
 echo "Grafana started at http://localhost:3000/explore"
