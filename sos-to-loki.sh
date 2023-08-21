@@ -62,7 +62,7 @@ sos="$(get_mountpoint "${1}")"
 echo "Path to local SOS report: ${sos}"
 
 echo "Starting Grafana+Loki+Promtail stack"
-podman kube down ./pod.yaml >/dev/null
+podman pod exists sos-to-loki && podman kube down ./pod.yaml >/dev/null
 SOS_REPORT_INPUT="${sos}" envsubst <./pod.yaml | podman kube play - >/dev/null
 
 sos_journal="${sos}/sos_commands/logs/journalctl_--no-pager"

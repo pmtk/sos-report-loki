@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: loki-sos-report
+  name: sos-to-loki
 spec:
   containers:
 
