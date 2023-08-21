@@ -52,8 +52,8 @@ get_mountpoint() {
 	)
 }
 
-if [ -z "$1" ]; then
-	echo "./local-loki.sh <path to sos-report>"
+if [ "$#" -ne 1 ]; then
+	echo "./sos-to-loki.sh <path to sos-report>"
 	exit 1
 fi
 
